@@ -55,9 +55,9 @@ def extract_valid_games(games_ndjson):
         white_rating, white_prov = parse_rating(white)
         black_rating, black_prov = parse_rating(black)
 
-        # Include provisional, or non-provisional >= 2400
-        white_ok = white_prov or white_rating >= 2400
-        black_ok = black_prov or black_rating >= 2400
+        # Allow provisional OR non-provisional >= 2300
+        white_ok = white_prov or white_rating >= 2300
+        black_ok = black_prov or black_rating >= 2300
 
         if white_ok and black_ok and "pgn" in game:
             valid_pgns.append(game["pgn"].strip())
@@ -73,7 +73,6 @@ def main():
         time.sleep(1.5)
         filtered = extract_valid_games(ndjson)
 
-        # Avoid duplicates
         for pgn in filtered:
             if pgn not in seen:
                 seen.add(pgn)
