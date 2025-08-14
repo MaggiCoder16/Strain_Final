@@ -1,89 +1,31 @@
-import requests
-import time
-import os
-
-BOTS = [
-    "NimsiluBot",
-    "MaggiChess16",
-    "NNUE_Drift",
-    "Endogenetic-Bot",
-    "AttackKing_Bot"
-]
-
-OUTPUT_PGN = "filtered_960_bots_2200plus.pgn"
-
-def is_valid_line(line):
-    return line.startswith("[Event") or line.startswith("[Site") or line.startswith("[Date") or line.startswith("[Round") or line.startswith("[White") or line.startswith("[Black") or line.startswith("[Result") or line.startswith("[FEN") or line.startswith("[SetUp") or line.startswith("1.") or line == ""
-
-def fetch_full_games(bot):
-    url = f"https://lichess.org/api/games/user/{bot}"
-    headers = {
-        "Accept": "application/x-chess-pgn"
-    }
-    params = {
-        "max": 3000,
-        "variant": "chess960",
-        "perfType": "chess960",
-        "vs": ",".join(BOTS),
-        "pgnInJson": False,
-        "rated": "true",
-        "analysed": "false",
-        "opening": "false",
-        "clocks": "false",
-        "evals": "false"
-    }
-
-    print(f"Fetching games for {bot}...")
-    response = requests.get(url, headers=headers, params=params)
-    if response.status_code != 200:
-        print(f"  Failed for {bot} - {response.status_code}")
-        return ""
-
-    return response.text
-
-def filter_games(pgn_data):
-    games = pgn_data.strip().split("\n\n\n")
-    valid_games = []
-
-    for game in games:
-        lines = game.split("\n")
-        tags = {line.split(" ")[0][1:]: line for line in lines if line.startswith("[")}
-        if "[Variant \"Chess960\"]" not in tags.get("Variant", ""):
+def extract_valid_games(games_ndjson):
+    valid_pgns = []
+    for line in games_ndjson:
+        try:
+            game = json.loads(line)
+        except json.JSONDecodeError:
             continue
-        white = tags.get("White", "")
-        black = tags.get("Black", "")
-        w_rating_line = tags.get("WhiteElo", "")
-        b_rating_line = tags.get("BlackElo", "")
-        w_prov = "WhiteRatingDiff" not in tags
-        b_prov = "BlackRatingDiff" not in tags
 
-        def extract_rating(line):
-            try:
-                return int(line.split('"')[1])
-            except:
-                return 0
+        if game.get("variant") != "chess960":
+            continue
 
-        wr = extract_rating(w_rating_line)
-        br = extract_rating(b_rating_line)
+        players = game.get("players", {})
+        white = players.get("white", {})
+        black = players.get("black", {})
+        white_user = white.get("user", {})
+        black_user = black.get("user", {})
 
-        if (w_prov or wr >= 2400) and (b_prov or br >= 2400):
-            valid_games.append(game.strip())
+        if not (white_user.get("bot") and black_user.get("bot")):
+            continue
 
-    return valid_games
+        white_rating, white_prov = parse_rating(white)
+        black_rating, black_prov = parse_rating(black)
 
-def main():
-    all_games = []
-    for bot in BOTS:
-        pgn_data = fetch_full_games(bot)
-        time.sleep(2)  # rate limit
-        filtered = filter_games(pgn_data)
-        print(f"  → {len(filtered)} valid games for {bot}")
-        all_games.extend(filtered)
+        # Allow provisional games and games with rating >= 2400
+        white_ok = white_prov or white_rating >= 2400
+        black_ok = black_prov or black_rating >= 2400
 
-    print(f"\nTotal games collected: {len(all_games)}")
-    with open(OUTPUT_PGN, "w", encoding="utf-8") as f:
-        f.write("\n\n\n".join(all_games))
-    print(f"PGN saved to {OUTPUT_PGN}")
+        if white_ok and black_ok and "pgn" in game:
+            valid_pgns.append(game["pgn"].strip())
 
-if __name__ == "__main__":
-    main()
+    return valid_pgns
