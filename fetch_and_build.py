@@ -1,3 +1,37 @@
+import requests
+import time
+import json
+
+BOTS = [
+    "NimsiluBot", "MaggiChess16", "NNUE_Drift", "Endogenetic-Bot",
+    "Exogenetic-Bot", "ToromBot", "Strain-On-Veins", "Cloud_Classroom_Bot", "Yuki_1324"
+]
+
+OUTPUT_PGN = "filtered_960_bots_2400plus.pgn"
+MAX_GAMES_PER_BOT = 5000
+
+def fetch_games(username):
+    url = f"https://lichess.org/api/games/user/{username}"
+    headers = {"Accept": "application/x-ndjson"}
+    params = {
+        "max": MAX_GAMES_PER_BOT,
+        "variant": "chess960",
+        "pgnInJson": "true"
+    }
+
+    print(f"Fetching games for {username}...")
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print(f"  Failed for {username} - Status: {response.status_code}")
+        return []
+
+    return [line for line in response.text.strip().split('\n') if line]
+
+def parse_rating(player):
+    rating = player.get("rating", 0)
+    provisional = player.get("provisional", False)
+    return rating, provisional
+
 def extract_valid_games(games_ndjson):
     valid_pgns = []
     for line in games_ndjson:
@@ -21,7 +55,7 @@ def extract_valid_games(games_ndjson):
         white_rating, white_prov = parse_rating(white)
         black_rating, black_prov = parse_rating(black)
 
-        # Allow provisional games and games with rating >= 2400
+        # Include provisional, or non-provisional >= 2400
         white_ok = white_prov or white_rating >= 2400
         black_ok = black_prov or black_rating >= 2400
 
@@ -29,3 +63,28 @@ def extract_valid_games(games_ndjson):
             valid_pgns.append(game["pgn"].strip())
 
     return valid_pgns
+
+def main():
+    all_pgns = []
+    seen = set()
+
+    for bot in BOTS:
+        ndjson = fetch_games(bot)
+        time.sleep(1.5)
+        filtered = extract_valid_games(ndjson)
+
+        # Avoid duplicates
+        for pgn in filtered:
+            if pgn not in seen:
+                seen.add(pgn)
+                all_pgns.append(pgn)
+
+        print(f"  → {len(filtered)} valid games for {bot}")
+
+    print(f"\nTotal games collected: {len(all_pgns)}")
+    with open(OUTPUT_PGN, "w", encoding="utf-8") as f:
+        f.write("\n\n".join(all_pgns))
+    print(f"PGN saved to {OUTPUT_PGN}")
+
+if __name__ == "__main__":
+    main()
