@@ -85,8 +85,8 @@ opening_books:
     standard_white:
       selection: weighted_random
       names:
-        - DefaultBook
-        - BackupBook
+        - Optimus2502
+        - Optimus4
 
     standard_black:
       selection: best_move
@@ -119,8 +119,8 @@ opening_books:
 
 online_moves:
   opening_explorer:
-    enabled: false                        # Activate online moves from Lichess opening explorer. The move that has performed best for this bot is played.
-    priority: 300                         # Priority with which this move source is used. Higher priority is used first.
+    enabled: true                        # Activate online moves from Lichess opening explorer. The move that has performed best for this bot is played.
+    priority: 100                         # Priority with which this move source is used. Higher priority is used first.
     only_without_book: false              # Whether the Lichess opening explorer should only be used if there is no matching book.
     use_for_variants: false               # Whether the Lichess opening explorer should be used for other variants than standard and chess960.
     min_time: 10                          # Time the bot must have at least to use the online move. +10 seconds in games without increment.
@@ -144,11 +144,11 @@ online_moves:
   chessdb:
     enabled: true                        # Activate online moves from https://chessdb.cn/queryc_en/
     priority: 100                         # Priority with which this move source is used. Higher priority is used first.
-    only_without_book: true              # Whether the chessdb should only be used if there is no matching book.
+    only_without_book: false              # Whether the chessdb should only be used if there is no matching book.
     min_candidates: 1                     # Minimum number of candidate moves.
     min_time: 10                          # Time the bot must have at least to use the online move. +10 seconds in games without increment.
     timeout: 5                            # Time the server has to respond.
-    selection: "good"                     # Move selection is one of "optimal", "best" or "good".
+    selection: "best"                     # Move selection is one of "optimal", "best" or "good".
 #   max_depth: 16                         # Half move max depth. (Comment this line for max depth)
 #   max_moves: 1                          # Max number of moves played from chessdb. (Comment this line for max moves)
   online_egtb:
@@ -247,4 +247,6 @@ books:                                    # Names of the opening books (to be us
   DefaultBook: "./engines/Book2.bin"
   BackupBook: "./engines/Book3.bin"
   BlackBook: "./engines/black.bin"
+  Optimus2502: "./engines/OPTIMUS2502.bin"
+  Optimus4: "./engines/OPTIMUS4.bin"
   Goodbook: "./engines/book.bin"
