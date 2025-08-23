@@ -112,7 +112,17 @@ opening_books:
     chess960_black:
       selection: best_move
       names:
-        - Goodbook    
+        - Goodbook
+
+    antichess_white:
+      selection: best_move
+      names:
+        - Anti
+
+    antichess_black:
+      selection: best_move
+      names:
+        - Anti
 
 #   'antichess', 'atomic', 'chess960', 'crazyhouse', 'horde', 'kingofthehill', 'racingkings' and '3check' as well.
 #   Append '_white', '_black' or '_human' to use the engine only as the specific color or against humans.
@@ -248,3 +258,5 @@ books:                                    # Names of the opening books (to be us
   BackupBook: "./engines/Book3.bin"
   BlackBook: "./engines/black.bin"
   Goodbook: "./engines/book.bin"
+  Anti: "./engines/anti_book.bin"
+
