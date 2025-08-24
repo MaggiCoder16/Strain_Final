@@ -1,0 +1,41 @@
+name: Sync BotLi
+
+on:
+  workflow_dispatch:   
+  schedule:
+    - cron: "0 0 * * *"  
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write    
+
+    steps:
+      - name: Checkout our repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git identity
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Add BotLi remote
+        run: |
+          git remote add botli https://github.com/MaggiCoder16/NNUE_Final.git || echo "NNUE repo already added"
+          git fetch botli main
+
+      - name: Merge changes into our repo
+        run: |
+          # Try merging with unrelated histories (first-time only)
+          git merge botli/main --allow-unrelated-histories -X ours --no-edit || true
+
+           Future merges will just do:
+          git merge botli/main -X ours --no-edit || true
+
+          git commit -am "Sync NNUE updates (ours wins on conflicts)" || echo "No changes to commit"
+
+      - name: Push changes
+        run: git push origin main
