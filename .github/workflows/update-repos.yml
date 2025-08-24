@@ -1,14 +1,16 @@
-name: Sync NNUE
+name: Sync BotLi
 
 on:
-  workflow_dispatch:   
+  workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"  
+    - cron: "0 */2 * * *"
+
 jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
-      contents: write    
+      contents: write
+      workflows: write
 
     steps:
       - name: Checkout our repo
@@ -29,13 +31,11 @@ jobs:
 
       - name: Merge changes into our repo
         run: |
-          # Try merging with unrelated histories (first-time only)
           git merge botli/main --allow-unrelated-histories -X ours --no-edit || true
-
-          # Future merges will just do:
           git merge botli/main -X ours --no-edit || true
-
-          git commit -am "Sync NNUE updates (ours wins on conflicts)" || echo "No changes to commit"
+          git checkout --ours .
+          git add -A
+          git commit -m "Sync NNUE updates (ours wins on conflicts)" || echo "No changes to commit"
 
       - name: Push changes
         run: git push origin main
