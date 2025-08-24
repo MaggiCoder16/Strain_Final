@@ -1,4 +1,4 @@
-name: Sync BotLi
+name: Sync NNUE
 
 on:
   workflow_dispatch:
@@ -24,7 +24,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
 
-      - name: Add BotLi remote
+      - name: Add NNUE remote
         run: |
           git remote add botli https://github.com/MaggiCoder16/NNUE_Final.git || echo "NNUE repo already added"
           git fetch botli main
