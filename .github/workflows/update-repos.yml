@@ -32,7 +32,7 @@ jobs:
           # Try merging with unrelated histories (first-time only)
           git merge botli/main --allow-unrelated-histories -X ours --no-edit || true
 
-           Future merges will just do:
+          # Future merges will just do:
           git merge botli/main -X ours --no-edit || true
 
           git commit -am "Sync NNUE updates (ours wins on conflicts)" || echo "No changes to commit"
