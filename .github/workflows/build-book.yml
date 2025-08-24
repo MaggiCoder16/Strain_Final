@@ -1,41 +1,23 @@
-name: Build .bin Book
+name: Build Crazyhouse Book
 
 on:
   workflow_dispatch:
 
 jobs:
-  convert:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repo
-      uses: actions/checkout@v3
-
-    - name: Install Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
-      run: |
-        pip install chess requests
-
-    - name: Fetch games and build PGN
-      run: python fetch_and_build.py
-
-    - name: Create Polyglot book
-      run: python create_polyglot.py
-
-    - name: Move .bin to engines/
-      run: |
-        mkdir -p engines
-        mv book.bin engines/
-
-    - name: Upload book.bin as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: chess960-opening-book
-        path: engines/book.bin
-
-
-
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          pip install --upgrade pip
+          pip install chess requests
+      - run: python filter_and_build.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: crazyhouse-book
+          path: |
+            crazyhouse_games.pgn
+            crazyhouse_book.bin
