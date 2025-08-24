@@ -1,4 +1,4 @@
-name: Sync BotLi
+name: Sync NNUE
 
 on:
   workflow_dispatch:   
